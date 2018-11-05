@@ -1,0 +1,24 @@
+{
+  "name": "chatserverbackend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node ./lib/server.ts",
+    "start": "nodemon ./dist/server.js",
+    "prod": " npm run build && npm run start"
+  },
+  "dependencies": {
+    "@types/node": "^10.12.2",
+    "body-parser": "^1.18.3",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "^4.16.4",
+    "morgan": "~1.9.0",
+    "socket.io": "^2.1.1",
+    "typescript": "^3.1.6"
+  },
+  "devDependencies": {
+    "@types/socket.io": "^2.1.0"
+  }
+}
