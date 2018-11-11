@@ -5,7 +5,6 @@ export class Router {
     public static routes(app): void {
         app.route('/')
             .get((req: Request, res: Response) => {
-                console.log(this.getViewPath("index"));
                 res.status(200).sendFile(this.getViewPath("index"));
             })
     }

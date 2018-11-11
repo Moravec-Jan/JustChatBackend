@@ -1,18 +1,19 @@
-import * as express from "express";
-import * as bodyParser from "body-parser";
+import * as Express from "express";
+import * as BodyParser from "body-parser";
+import * as Morgan from "morgan";
 import {Router} from "./router";
-import {SocketController} from "./socket_controller";
+import {SocketController} from "./socket.controller";
 import * as socketsIO from "socket.io";
 import {createServer, Server} from 'http';
 
 class App {
 
-    public app: express.Application;
+    public app: Express.Application;
     public io;
     public server: Server;
 
     constructor() {
-        this.app = express();
+        this.app = Express();
         this.config();
         this.server = createServer(this.app);
         this.io = socketsIO(this.server);
@@ -22,8 +23,9 @@ class App {
 
     private config(): void {
         // support application/json type post data
-        this.app.use(bodyParser.json());
-        this.app.use(express.static('public'));
+        this.app.use(Morgan('combined'));
+        this.app.use(BodyParser.json());
+        this.app.use(Express.static('public'));
     }
 
 }
