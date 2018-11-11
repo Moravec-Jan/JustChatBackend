@@ -30,9 +30,9 @@ export class SocketController {
                         users.push({name: value['username'], id: value.id});
                     }
                 });
-
-                socket.emit(this.LOGIN_REQUEST_ID, {name: name, users: users});
-                socket.broadcast.emit(this.USER_LOGGED_IN_ID, {name: name, id: socket.id}); //receives all except sender
+                //TODO UNCOMMENT THIS!
+                //socket.emit(this.LOGIN_REQUEST_ID, {name: name, users: users});
+                //socket.broadcast.emit(this.USER_LOGGED_IN_ID, {name: name, id: socket.id}); //receives all except sender
 
             });
 
