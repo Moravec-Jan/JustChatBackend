@@ -1,9 +1,8 @@
-import * as Express from "express";
-import * as BodyParser from "body-parser";
-import * as Morgan from "morgan";
-import {Router} from "./router";
-import {SocketController} from "./socket.controller";
-import * as socketsIO from "socket.io";
+import * as Express from 'express';
+import * as BodyParser from 'body-parser';
+import * as Morgan from 'morgan';
+import {Router} from './router';
+import * as socketsIO from 'socket.io';
 import {createServer, Server} from 'http';
 
 class App {
@@ -17,8 +16,7 @@ class App {
         this.config();
         this.server = createServer(this.app);
         this.io = socketsIO(this.server);
-        Router.routes(this.app);
-        SocketController.routes(this.io);
+        Router.routes(this.io);
     }
 
     private config(): void {
