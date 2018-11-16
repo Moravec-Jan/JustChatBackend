@@ -9,11 +9,13 @@
     "prod": " npm run build && npm run start"
   },
   "dependencies": {
+    "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
     "cookie-parser": "~1.4.3",
     "express": "^4.16.4",
     "morgan": "~1.9.0",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "validator": "^10.9.0"
   },
   "devDependencies": {
     "@types/socket.io": "^2.1.0",

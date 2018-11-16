@@ -1,8 +1,8 @@
 import {Socket} from 'socket.io';
 import {UserConnection} from './user-connection';
-import {User} from './user';
+import {UserEntity} from './user-entity';
 
-export class UserRepository {
+export class UserConnectionRepository {
     private static users: Map<string, UserConnection> = new Map();
 
     public static add(key: string, user: UserConnection) {
@@ -17,7 +17,7 @@ export class UserRepository {
         this.users.delete(key);
     }
 
-    public static getAllUsers(): User[]{
+    public static getAllUsers(): UserEntity[]{
        return Array.from(this.users.values(), v => v.user);
     }
 }

@@ -1,5 +1,5 @@
 import {Socket} from 'socket.io';
-import {UserRepository} from '../model/user.repository';
+import {UserConnectionRepository} from '../model/user-connection.repository';
 import {Api} from '../core/api';
 import {RemoteMessage} from '../model/remote-message';
 import {MessageInfo} from '../model/message-info';
@@ -7,7 +7,7 @@ import {UserConnection} from '../model/user-connection';
 
 export class MessageController {
     public static onNewMessage(sender: Socket, remoteMessage: RemoteMessage) {
-        const target: UserConnection = UserRepository.get(remoteMessage.target.id);
+        const target: UserConnection = UserConnectionRepository.get(remoteMessage.target.id);
         if (target) {
             console.log('UserConnection with ID: ' + remoteMessage.target.id + ' has send message to user' + remoteMessage.author.id + ': ' + remoteMessage.body);
             target.socket.emit(Api.NEW_MESSAGE_ID, remoteMessage, (data) => { // verify that message has got to destination

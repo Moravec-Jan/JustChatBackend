@@ -1,6 +1,7 @@
-import {User} from './user';
+import {UserEntity} from './user-entity';
 
 export interface LoggedData {
     name: string,
-    users: User[]
+    users: UserEntity[];
+    status: string;
 }

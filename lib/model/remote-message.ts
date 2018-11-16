@@ -1,8 +1,8 @@
-import {User} from './user';
+import {UserEntity} from './user-entity';
 
 export interface RemoteMessage {
     id: number;
-    author: User;
-    target: User;
+    author: UserEntity;
+    target: UserEntity;
     body: string;
 }

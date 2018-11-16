@@ -17,6 +17,6 @@ export class NameGenerator {
     }
 
     public static generateName(): string {
-       return this.capFirst(this.name1[this.getRandomInt(0, this.name1.length)]) + ' ' + this.capFirst(this.name2[this.getRandomInt(0, this.name2.length)]);
+       return this.capFirst(this.name1[this.getRandomInt(0, this.name1.length - 1)]) + ' ' + this.capFirst(this.name2[this.getRandomInt(0, this.name2.length - 1)]);
     }
 }
