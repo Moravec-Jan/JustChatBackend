@@ -12,6 +12,7 @@ import {UserData} from '../model/user-data';
 import * as bcrypt from 'bcrypt';
 import * as validator from 'validator';
 import * as uniqid from 'uniqid';
+import {SocketUtility} from '../util/socket.utility';
 
 // noinspection ES6ConvertVarToLetConst
 
@@ -38,7 +39,7 @@ export class LoginController {
             if (err) {
                 this.sendServerError(socket, err);
             } else {
-                const user: UserConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+                const user: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getCookie(socket));
                 const userEntity: UserEntity = {name: data.nickname, id: user.user.id};
                 UserDataRepository.add({id: userEntity.id, nickname: data.nickname, email: data.email, password: hash}); // store hash
                 this.updateUserConnection(socket, userEntity);
@@ -50,7 +51,7 @@ export class LoginController {
     }
 
     private static createSuccessfulInfo(socket: Socket, data) {
-        const userConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        const userConnection = UserSessionRepository.getBySessionId(SocketUtility.getCookie(socket));
         let users: UserEntity[] = UserSessionRepository.getAllUsersExcept(userConnection.user.id);
         return {name: data.nickname, users, status: 'success'};
     }
@@ -63,7 +64,7 @@ export class LoginController {
 
     public static guestLogin = (socket: Socket) => {
         // try to find session if does not exist create new guest
-        const connection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        const connection = UserSessionRepository.getBySessionId(socket.handshake.headers.cookie);
         const user: UserEntity = connection ? connection.user : LoginController.generateGuestData();
         const users: UserEntity[] = UserSessionRepository.getAllUsersExcept(user.id);
         const info: LoggedData = {id: user.id, name: user.name, users, status: 'success'};
@@ -71,7 +72,7 @@ export class LoginController {
 
         if (!connection) {
             //for new users
-            UserSessionRepository.add(socket.handshake.query.ssid, new UserConnection(socket, user));
+            UserSessionRepository.add(SocketUtility.getCookie(socket), new UserConnection(socket, user));
             socket.emit(Api.GUEST_LOGIN_REQUEST_ID, info); // logged as guest
         } else {
             // for earlier logged
@@ -110,27 +111,27 @@ export class LoginController {
     };
 
     private static updateUserConnection(socket: Socket, userEntity) {
-        let userConnection: UserConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        let userConnection: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getCookie(socket));
         if (!userConnection) {
             userConnection = new UserConnection(socket, userEntity); // create new
-            UserSessionRepository.add(socket.handshake.query.ssid, userConnection);
+            UserSessionRepository.add(SocketUtility.getCookie(socket), userConnection);
         } else {
             userConnection.user = userEntity; // set new name
         }
     }
 
     public static onDisconnect(socket: Socket) {
-        console.log('UserConnection with ID: ' + socket.handshake.query.ssid + ' has been disconnected');
-        const userConnection: UserConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        console.log('UserConnection with ID: ' + SocketUtility.getCookie(socket) + ' has been disconnected');
+        const userConnection: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getCookie(socket));
         if (userConnection) {
-            //UserSessionRepository.remove(socket.handshake.query.ssid);
+            //UserSessionRepository.remove(SocketUtility.getCookie(socket));
             socket.broadcast.emit(Api.OTHER_USER_LOGGED_OUT_ID, {id: userConnection.user.id}); //receive all except sender
         }
     }
 
     public static logout(socket: Socket) {
-        const userConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
-        UserSessionRepository.remove(socket.handshake.query.ssid);
+        const userConnection = UserSessionRepository.getBySessionId(SocketUtility.getCookie(socket));
+        UserSessionRepository.remove(SocketUtility.getCookie(socket));
         if (userConnection) {
             socket.broadcast.emit(Api.OTHER_USER_LOGGED_OUT_ID, {id: userConnection.user.id}); //notify others
             socket.emit(Api.LOGOUT_REQUEST_ID); //notify user

@@ -699,10 +699,16 @@ Apache-2.0
 @angular/core
 MIT
 
+ngx-cookie-service
+MIT
+
 @angular/common
 MIT
 
 @angular/platform-browser
+MIT
+
+@angular/router
 MIT
 
 @angular/cdk
@@ -755,8 +761,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-@angular/material/toolbar
-
 @angular/forms
 MIT
 
@@ -769,11 +773,15 @@ MIT
 
 @angular/material/button
 
+@angular/material/card
+
 @angular/material/icon
 
 @angular/material/tabs
 
 @angular/material/form-field
+
+@angular/material/toolbar
 
 zone.js
 MIT

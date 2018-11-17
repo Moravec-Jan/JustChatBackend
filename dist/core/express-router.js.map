@@ -1,0 +1,1 @@
+{"version":3,"file":"express-router.js","sourceRoot":"","sources":["../../lib/core/express-router.ts"],"names":[],"mappings":";;AAMA;IAAA;IAgBA,CAAC;IAdiB,mBAAK,GAAnB,UAAoB,GAAG;QACnB,+BAA+B;QAC/B,wBAAwB;QACxB,0DAA0D;QAC1D,MAAM;QAEN,qFAAqF;QAErF,mFAAmF;QACnF,+FAA+F;QAC/F,0GAA0G;QAC1G,6GAA6G;IACjH,CAAC;IAEL,oBAAC;AAAD,CAAC,AAhBD,IAgBC;AAhBY,sCAAa"}

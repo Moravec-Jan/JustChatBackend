@@ -5,6 +5,7 @@ export class UserConnection {
     private _socket: Socket;
     private _user: UserEntity;
 
+
     constructor(socket: Socket, user: UserEntity) {
         this._socket = socket;
         this._user = user;
