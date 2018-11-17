@@ -2,7 +2,7 @@ import {Router, Request, Response} from 'express';
 import {UserEntity} from '../model/user-entity';
 import {LoggedData} from '../model/logged-data';
 import {NameGenerator} from '../model/name-generator';
-import {UserConnectionRepository} from '../model/user-connection.repository';
+import {UserSessionRepository} from '../model/user-session.repository';
 import {Api} from '../core/api';
 import {Socket} from 'socket.io';
 import {UserConnection} from '../model/user-connection';
@@ -10,8 +10,8 @@ import {RegistrationData} from '../model/registration-data';
 import {UserDataRepository} from '../model/user-data.repository';
 import {UserData} from '../model/user-data';
 import * as bcrypt from 'bcrypt';
-import {strictEqual} from 'assert';
 import * as validator from 'validator';
+import * as uniqid from 'uniqid';
 
 // noinspection ES6ConvertVarToLetConst
 
@@ -19,7 +19,7 @@ import * as validator from 'validator';
 export class LoginController {
     private static saltRounds: number = 12;
 
-    public static register(socket: Socket, data: UserData) {
+    public static register(socket: Socket, data: RegistrationData) {
         //validate data
         const error: string = LoginController.validateUserData(data);
         if (error !== '') {
@@ -38,8 +38,9 @@ export class LoginController {
             if (err) {
                 this.sendServerError(socket, err);
             } else {
-                const userEntity = {name: data.nickname, id: socket.id};
-                UserDataRepository.add({nickname: data.nickname, email: data.email, password: hash}); // store hash
+                const user: UserConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+                const userEntity: UserEntity = {name: data.nickname, id: user.user.id};
+                UserDataRepository.add({id: userEntity.id, nickname: data.nickname, email: data.email, password: hash}); // store hash
                 this.updateUserConnection(socket, userEntity);
                 const info = this.createSuccessfulInfo(socket, data);
                 socket.emit(Api.REGISTER_REQUEST_ID, info); // to sender
@@ -48,11 +49,12 @@ export class LoginController {
         });
     }
 
-    private static createSuccessfulInfo(socket: SocketIO.Socket, data: UserData) {
-        let users: UserEntity[] = UserConnectionRepository.getAllUsers();
-        users = users.filter(value => value.id != socket.id);
+    private static createSuccessfulInfo(socket: Socket, data) {
+        const userConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        let users: UserEntity[] = UserSessionRepository.getAllUsersExcept(userConnection.user.id);
         return {name: data.nickname, users, status: 'success'};
     }
+
 
     private static sendServerError(socket: Socket, err) {
         socket.emit(Api.REGISTER_REQUEST_ID, {status: 'error', error: 'Server error has occurred!'});
@@ -60,16 +62,32 @@ export class LoginController {
     }
 
     public static guestLogin = (socket: Socket) => {
-        const id: string = socket.id;
-        const name: string = NameGenerator.generateName();
-        const user: UserEntity = {id, name};
-        const users: UserEntity[] = UserConnectionRepository.getAllUsers();
-        const info: LoggedData = {name, users, status: 'success'};
+        // try to find session if does not exist create new guest
+        const connection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        const user: UserEntity = connection ? connection.user : LoginController.generateGuestData();
+        const users: UserEntity[] = UserSessionRepository.getAllUsersExcept(user.id);
+        const info: LoggedData = {id: user.id, name: user.name, users, status: 'success'};
+        socket.broadcast.emit(Api.OTHER_USER_LOGGED_IN_ID, user); //receive all except sender
 
-        UserConnectionRepository.add(socket.id, new UserConnection(socket, user));
-        socket.emit(Api.GUEST_LOGIN_REQUEST_ID, info); // to sender
-        socket.broadcast.emit(Api.OTHER_USER_LOGGED_IN_ID, {name: name, id: socket.id}); //receive all except sender
+        if (!connection) {
+            //for new users
+            UserSessionRepository.add(socket.handshake.query.ssid, new UserConnection(socket, user));
+            socket.emit(Api.GUEST_LOGIN_REQUEST_ID, info); // logged as guest
+        } else {
+            // for earlier logged
+            if (UserDataRepository.getById(connection.user.id)) {
+                socket.emit(Api.USER_LOGIN_REQUEST_ID, info); //user
+            } else {
+                socket.emit(Api.GUEST_LOGIN_REQUEST_ID, info); //guest
+            }
+        }
     };
+
+    private static generateGuestData(): UserEntity {
+        const id: string = uniqid();
+        const name: string = NameGenerator.generateName();
+        return {id, name};
+    }
 
     public static userLogin = (socket: Socket, data) => {
         const userData: UserData = UserDataRepository.get(data.email);
@@ -77,7 +95,7 @@ export class LoginController {
             bcrypt.compare(data.password, userData.password, (err, res) => {
                 if (res) { //right password
                     const userData = UserDataRepository.get(data.email);
-                    const userEntity: UserEntity = {name: userData.nickname, id: socket.id};
+                    const userEntity: UserEntity = {name: userData.nickname, id: userData.id};
                     LoginController.updateUserConnection(socket, userEntity);
                     const info = LoginController.createSuccessfulInfo(socket, userData);
                     socket.emit(Api.USER_LOGIN_REQUEST_ID, info); // to sender
@@ -92,22 +110,34 @@ export class LoginController {
     };
 
     private static updateUserConnection(socket: Socket, userEntity) {
-        let userConnection: UserConnection = UserConnectionRepository.get(socket.id);
+        let userConnection: UserConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
         if (!userConnection) {
             userConnection = new UserConnection(socket, userEntity); // create new
-            UserConnectionRepository.add(socket.id, userConnection);
+            UserSessionRepository.add(socket.handshake.query.ssid, userConnection);
         } else {
             userConnection.user = userEntity; // set new name
         }
     }
 
-    public static onDisconnect(socket) {
-        console.log('UserConnection with ID: ' + socket.id + ' has been disconnected');
-        UserConnectionRepository.remove(socket.id);
-        socket.broadcast.emit(Api.OTHER_USER_LOGGED_OUT_ID, {id: socket.id}); //receive all except sender
+    public static onDisconnect(socket: Socket) {
+        console.log('UserConnection with ID: ' + socket.handshake.query.ssid + ' has been disconnected');
+        const userConnection: UserConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        if (userConnection) {
+            //UserSessionRepository.remove(socket.handshake.query.ssid);
+            socket.broadcast.emit(Api.OTHER_USER_LOGGED_OUT_ID, {id: userConnection.user.id}); //receive all except sender
+        }
     }
 
-    private static validateUserData(data: UserData): string {
+    public static logout(socket: Socket) {
+        const userConnection = UserSessionRepository.getBySessionId(socket.handshake.query.ssid);
+        UserSessionRepository.remove(socket.handshake.query.ssid);
+        if (userConnection) {
+            socket.broadcast.emit(Api.OTHER_USER_LOGGED_OUT_ID, {id: userConnection.user.id}); //notify others
+            socket.emit(Api.LOGOUT_REQUEST_ID); //notify user
+        }
+    }
+
+    private static validateUserData(data: RegistrationData): string {
 
         let error: string = '';
         if (!data || !data.password || !data.nickname || !data.email) {

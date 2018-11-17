@@ -4,7 +4,7 @@ import {UserEntity} from './user-entity';
 import {UserData} from './user-data';
 
 export class UserDataRepository {
-    // if we would use db, we should escape input data to prevent sql injection
+    // if we would use db, we should sanitize input data to prevent sql injection
 
     private static users: Map<string, UserData> = new Map();
 
@@ -22,5 +22,16 @@ export class UserDataRepository {
 
     public static exists(email: string): boolean {
         return this.users.has(email);
+    }
+
+    public static getById(id: string): UserData {
+        let userData: UserData;
+        Array.from(this.users.values()).forEach(value => {
+            if (value.id === id) {
+                userData = value;
+            }
+        });
+
+        return userData;
     }
 }

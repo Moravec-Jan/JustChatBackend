@@ -4,12 +4,15 @@ import * as Morgan from 'morgan';
 import {Router} from './router';
 import * as socketsIO from 'socket.io';
 import {createServer, Server} from 'http';
+import * as bodyParser from 'body-parser';
+import * as ExpressSession from 'express-session';
+import * as Cors from 'cors';
 
 class App {
 
-    public app: Express.Application;
-    public io;
-    public server: Server;
+    private readonly app: Express.Application;
+    private readonly io;
+    public readonly server: Server;
 
     constructor() {
         this.app = Express();
@@ -20,10 +23,18 @@ class App {
     }
 
     private config(): void {
-        // support application/json type post data
+
+        this.app.use(Cors());
         this.app.use(Morgan('combined'));
-        this.app.use(BodyParser.json());
+        this.app.use(ExpressSession({ //must be set before Express.static('public') middleware otherwise doesnt work!!!
+            secret: 'a68sd468aw6ad4w8d',
+            resave: true,
+            saveUninitialized: true,
+            cookie: {httpOnly: false}
+        }));
         this.app.use(Express.static('public'));
+        this.app.use(bodyParser.json());       // to support JSON-encoded bodies
+
     }
 
 }
