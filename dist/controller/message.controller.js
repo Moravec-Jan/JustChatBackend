@@ -7,7 +7,11 @@ var MessageController = /** @class */ (function () {
     function MessageController() {
     }
     MessageController.onNewMessage = function (sender, message) {
-        var author = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getCookie(sender)); // author is based on session, so it cannot be faked so easily
+        var author = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(sender)); // author is based on session, so it cannot be faked so easily
+        if (!author) {
+            console.log('author of message not found: ' + sender);
+            return;
+        }
         var remoteMessage = { author: author.user, target: message.target, id: message.id, body: message.body };
         var target = user_session_repository_1.UserSessionRepository.getByUserId(remoteMessage.target.id);
         if (target) {

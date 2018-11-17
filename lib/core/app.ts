@@ -29,7 +29,8 @@ class App {
         this.app.use(ExpressSession({ //must be set before Express.static('public') middleware otherwise doesnt work!!!
             secret: 'a68sd468aw6ad4w8d',
             resave: true,
-            saveUninitialized: true
+            saveUninitialized: true,
+            cookie: {httpOnly: true}
         }));
         this.app.use(Express.static('public'));
         this.app.use(bodyParser.json());       // to support JSON-encoded bodies

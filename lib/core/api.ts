@@ -7,6 +7,7 @@ export class Api{
     public static readonly USER_LOGIN_REQUEST_ID = 'user_login';
 
     public static readonly OTHER_USER_LOGGED_IN_ID = 'user_logged_in';
+    public static readonly OTHER_USER_STATE_CHANGED = 'user_stated_changed';
     public static readonly OTHER_USER_LOGGED_OUT_ID = 'user_logged_out';
 
     public static readonly REGISTER_REQUEST_ID = 'register_request';

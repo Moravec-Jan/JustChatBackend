@@ -8,7 +8,7 @@ export class Router {
     public static routes(io) {
 
         io.use(function (socket, next) { //middleware for checking session id
-            if (!SocketUtility.getCookie(socket)) {
+            if (!SocketUtility.getSessionId(socket)) {
                 console.log('unauthorized access' + socket);
                 //TODO: unauthorized access
                 return;
@@ -17,7 +17,7 @@ export class Router {
         });
 
         io.on('connection', (socket) => {
-            console.log('New user connected with ID: ' + SocketUtility.getCookie(socket));
+            console.log('New user connected with ID: ' + SocketUtility.getSessionId(socket));
             socket.on('disconnect', () => LoginController.onDisconnect(socket));
             socket.on(Api.GUEST_LOGIN_REQUEST_ID, () => LoginController.guestLogin(socket));
             socket.on(Api.NEW_MESSAGE_ID, (message) => MessageController.onNewMessage(socket, message));

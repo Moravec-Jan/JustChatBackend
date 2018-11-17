@@ -8,6 +8,7 @@ var Api = /** @class */ (function () {
     Api.GUEST_LOGIN_REQUEST_ID = 'guest_login';
     Api.USER_LOGIN_REQUEST_ID = 'user_login';
     Api.OTHER_USER_LOGGED_IN_ID = 'user_logged_in';
+    Api.OTHER_USER_STATE_CHANGED = 'user_stated_changed';
     Api.OTHER_USER_LOGGED_OUT_ID = 'user_logged_out';
     Api.REGISTER_REQUEST_ID = 'register_request';
     Api.LOGOUT_REQUEST_ID = "logout_request";

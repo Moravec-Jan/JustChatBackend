@@ -9,18 +9,12 @@ var UserConnection = /** @class */ (function () {
         get: function () {
             return this._socket;
         },
-        set: function (value) {
-            this._socket = value;
-        },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(UserConnection.prototype, "user", {
         get: function () {
             return this._user;
-        },
-        set: function (value) {
-            this._user = value;
         },
         enumerable: true,
         configurable: true

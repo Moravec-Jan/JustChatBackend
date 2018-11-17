@@ -8,7 +8,11 @@ import {SocketUtility} from '../util/socket.utility';
 
 export class MessageController {
     public static onNewMessage(sender: Socket, message) {
-        const author: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getCookie(sender)); // author is based on session, so it cannot be faked so easily
+        const author: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getSessionId(sender)); // author is based on session, so it cannot be faked so easily
+        if (!author) {
+            console.log('author of message not found: ' + sender);
+            return;
+        }
         const remoteMessage: RemoteMessage = {author: author.user, target: message.target, id: message.id, body: message.body};
 
         const target: UserConnection = UserSessionRepository.getByUserId(remoteMessage.target.id);

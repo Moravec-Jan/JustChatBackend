@@ -9,7 +9,7 @@ var Router = /** @class */ (function () {
     }
     Router.routes = function (io) {
         io.use(function (socket, next) {
-            if (!socket_utility_1.SocketUtility.getCookie(socket)) {
+            if (!socket_utility_1.SocketUtility.getSessionId(socket)) {
                 console.log('unauthorized access' + socket);
                 //TODO: unauthorized access
                 return;
@@ -17,7 +17,7 @@ var Router = /** @class */ (function () {
             next();
         });
         io.on('connection', function (socket) {
-            console.log('New user connected with ID: ' + socket_utility_1.SocketUtility.getCookie(socket));
+            console.log('New user connected with ID: ' + socket_utility_1.SocketUtility.getSessionId(socket));
             socket.on('disconnect', function () { return login_controller_1.LoginController.onDisconnect(socket); });
             socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.guestLogin(socket); });
             socket.on(api_1.Api.NEW_MESSAGE_ID, function (message) { return message_controller_1.MessageController.onNewMessage(socket, message); });

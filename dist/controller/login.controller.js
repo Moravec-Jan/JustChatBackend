@@ -32,18 +32,22 @@ var LoginController = /** @class */ (function () {
                 _this.sendServerError(socket, err);
             }
             else {
-                var user = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getCookie(socket));
+                var user = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
+                if (!user) {
+                    console.log('Users connection not found!');
+                    return;
+                }
                 var userEntity = { name: data.nickname, id: user.user.id };
+                socket.broadcast.emit(api_1.Api.OTHER_USER_STATE_CHANGED, { from: user.user, to: userEntity });
                 user_data_repository_1.UserDataRepository.add({ id: userEntity.id, nickname: data.nickname, email: data.email, password: hash }); // store hash
                 _this.updateUserConnection(socket, userEntity);
                 var info = _this.createSuccessfulInfo(socket, data);
                 socket.emit(api_1.Api.REGISTER_REQUEST_ID, info); // to sender
-                socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_IN_ID, userEntity);
             }
         });
     };
     LoginController.createSuccessfulInfo = function (socket, data) {
-        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getCookie(socket));
+        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
         var users = user_session_repository_1.UserSessionRepository.getAllUsersExcept(userConnection.user.id);
         return { name: data.nickname, users: users, status: 'success' };
     };
@@ -57,26 +61,27 @@ var LoginController = /** @class */ (function () {
         return { id: id, name: name };
     };
     LoginController.updateUserConnection = function (socket, userEntity) {
-        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getCookie(socket));
+        var id = socket_utility_1.SocketUtility.getSessionId(socket);
+        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(id);
         if (!userConnection) {
             userConnection = new user_connection_1.UserConnection(socket, userEntity); // create new
-            user_session_repository_1.UserSessionRepository.add(socket_utility_1.SocketUtility.getCookie(socket), userConnection);
+            user_session_repository_1.UserSessionRepository.add(socket_utility_1.SocketUtility.getSessionId(socket), userConnection);
         }
         else {
-            userConnection.user = userEntity; // set new name
+            user_session_repository_1.UserSessionRepository.update(id, socket, userEntity);
         }
     };
     LoginController.onDisconnect = function (socket) {
-        console.log('UserConnection with ID: ' + socket_utility_1.SocketUtility.getCookie(socket) + ' has been disconnected');
-        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getCookie(socket));
+        console.log('UserConnection with ID: ' + socket_utility_1.SocketUtility.getSessionId(socket) + ' has been disconnected');
+        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
         if (userConnection) {
-            //UserSessionRepository.remove(SocketUtility.getCookie(socket));
+            user_session_repository_1.UserSessionRepository.moveToArchive(socket_utility_1.SocketUtility.getSessionId(socket));
             socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_OUT_ID, { id: userConnection.user.id }); //receive all except sender
         }
     };
     LoginController.logout = function (socket) {
-        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getCookie(socket));
-        user_session_repository_1.UserSessionRepository.remove(socket_utility_1.SocketUtility.getCookie(socket));
+        var userConnection = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
+        user_session_repository_1.UserSessionRepository.remove(socket_utility_1.SocketUtility.getSessionId(socket));
         if (userConnection) {
             socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_OUT_ID, { id: userConnection.user.id }); //notify others
             socket.emit(api_1.Api.LOGOUT_REQUEST_ID); //notify user
@@ -101,18 +106,21 @@ var LoginController = /** @class */ (function () {
     LoginController.saltRounds = 12;
     LoginController.guestLogin = function (socket) {
         // try to find session if does not exist create new guest
-        var connection = user_session_repository_1.UserSessionRepository.getBySessionId(socket.handshake.headers.cookie);
+        var id = socket_utility_1.SocketUtility.getSessionId(socket);
+        var connection = user_session_repository_1.UserSessionRepository.getFromArchiveBySessionId(id);
         var user = connection ? connection.user : LoginController.generateGuestData();
         var users = user_session_repository_1.UserSessionRepository.getAllUsersExcept(user.id);
         var info = { id: user.id, name: user.name, users: users, status: 'success' };
         socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_IN_ID, user); //receive all except sender
         if (!connection) {
             //for new users
-            user_session_repository_1.UserSessionRepository.add(socket_utility_1.SocketUtility.getCookie(socket), new user_connection_1.UserConnection(socket, user));
+            user_session_repository_1.UserSessionRepository.add(socket_utility_1.SocketUtility.getSessionId(socket), new user_connection_1.UserConnection(socket, user));
             socket.emit(api_1.Api.GUEST_LOGIN_REQUEST_ID, info); // logged as guest
         }
         else {
             // for earlier logged
+            user_session_repository_1.UserSessionRepository.moveToActive(id); // move to active
+            user_session_repository_1.UserSessionRepository.update(id, socket, user);
             if (user_data_repository_1.UserDataRepository.getById(connection.user.id)) {
                 socket.emit(api_1.Api.USER_LOGIN_REQUEST_ID, info); //user
             }
@@ -126,12 +134,19 @@ var LoginController = /** @class */ (function () {
         if (userData) {
             bcrypt.compare(data.password, userData.password, function (err, res) {
                 if (res) { //right password
-                    var userData_1 = user_data_repository_1.UserDataRepository.get(data.email);
-                    var userEntity = { name: userData_1.nickname, id: userData_1.id };
+                    var originalSessionData = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
+                    var userEntity = { name: userData.nickname, id: userData.id };
+                    if (originalSessionData) {
+                        // session still exists
+                        socket.broadcast.emit(api_1.Api.OTHER_USER_STATE_CHANGED, { from: originalSessionData.user, to: userEntity });
+                    }
+                    else {
+                        // didnt find session data, other users will loose conversation connection
+                        socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_IN_ID, userEntity);
+                    }
                     LoginController.updateUserConnection(socket, userEntity);
-                    var info = LoginController.createSuccessfulInfo(socket, userData_1);
+                    var info = LoginController.createSuccessfulInfo(socket, userData);
                     socket.emit(api_1.Api.USER_LOGIN_REQUEST_ID, info); // to sender
-                    socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_IN_ID, userEntity);
                 }
                 else {
                     socket.emit(api_1.Api.USER_LOGIN_REQUEST_ID, { status: 'error', error: 'Wrong email and password combination.' });

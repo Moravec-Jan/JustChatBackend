@@ -9,8 +9,8 @@ var SocketController = /** @class */ (function () {
     SocketController.routes = function (io) {
         var _this = this;
         io.on('connection', function (socket) {
-            //Router.clients.set(SocketUtility.getCookie(socket), socket);
-            console.log('New user connected with ID: ' + SocketUtility.getCookie(socket));
+            //Router.clients.set(SocketUtility.getSessionId(socket), socket);
+            console.log('New user connected with ID: ' + SocketUtility.getSessionId(socket));
             socket.on('disconnect', function () { return login_controller_1.LoginController.onDisconnect(socket); });
             socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.guestLogin(socket); });
             socket.on(api_1.Api.NEW_MESSAGE_ID, function (message) { return _this.onNewMessage(message); });

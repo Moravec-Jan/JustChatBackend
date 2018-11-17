@@ -3,7 +3,10 @@ import * as CookieParser from 'cookie';
 
 export class SocketUtility {
 
-    public static getCookie(socket: Socket) {
+    public static getSessionId(socket: Socket) {
+        if (!socket.handshake.headers.cookie) {
+            return false;
+        }
         const cookies = CookieParser.parse(socket.handshake.headers.cookie);
         if (!cookies) {
             return false;

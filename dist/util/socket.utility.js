@@ -4,7 +4,10 @@ var CookieParser = require("cookie");
 var SocketUtility = /** @class */ (function () {
     function SocketUtility() {
     }
-    SocketUtility.getCookie = function (socket) {
+    SocketUtility.getSessionId = function (socket) {
+        if (!socket.handshake.headers.cookie) {
+            return false;
+        }
         var cookies = CookieParser.parse(socket.handshake.headers.cookie);
         if (!cookies) {
             return false;

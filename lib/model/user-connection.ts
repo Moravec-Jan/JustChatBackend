@@ -2,8 +2,8 @@ import {Socket} from 'socket.io';
 import {UserEntity} from './user-entity';
 
 export class UserConnection {
-    private _socket: Socket;
-    private _user: UserEntity;
+    private readonly _socket: Socket;
+    private readonly _user: UserEntity;
 
 
     constructor(socket: Socket, user: UserEntity) {
@@ -17,13 +17,5 @@ export class UserConnection {
 
     get user(): UserEntity {
         return this._user;
-    }
-
-    set socket(value: SocketIO.Socket) {
-        this._socket = value;
-    }
-
-    set user(value: UserEntity) {
-        this._user = value;
     }
 }
