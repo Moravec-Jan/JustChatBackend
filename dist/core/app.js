@@ -22,8 +22,7 @@ var App = /** @class */ (function () {
         this.app.use(ExpressSession({
             secret: 'a68sd468aw6ad4w8d',
             resave: true,
-            saveUninitialized: true,
-            cookie: { httpOnly: false }
+            saveUninitialized: true
         }));
         this.app.use(Express.static('public'));
         this.app.use(bodyParser.json()); // to support JSON-encoded bodies
