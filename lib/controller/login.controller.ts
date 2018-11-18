@@ -36,18 +36,19 @@ export class LoginController {
 
         //lets store user data and send messages
         bcrypt.hash(data.password, this.saltRounds, (err, hash: string) => {
-            if (err) {
+        if (err) {
                 this.sendServerError(socket, err);
             } else {
-                const user: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getSessionId(socket));
-                if (!user) {
-                    console.log('Users connection not found!');
-                    return;
+                const currentUserData: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getSessionId(socket));
+                const newUserEntity: UserEntity = {id: uniqid(), name: data.nickname};
+
+                if (currentUserData) {
+                    socket.broadcast.emit(Api.OTHER_USER_STATE_CHANGED, {from: currentUserData.user, to: newUserEntity});
+                } else {
+                    socket.broadcast.emit(Api.OTHER_USER_LOGGED_IN_ID, newUserEntity);
                 }
-                const userEntity: UserEntity = {name: data.nickname, id: user.user.id};
-                socket.broadcast.emit(Api.OTHER_USER_STATE_CHANGED, {from: user.user, to: userEntity});
-                UserDataRepository.add({id: userEntity.id, nickname: data.nickname, email: data.email, password: hash}); // store hash
-                this.updateUserConnection(socket, userEntity);
+                UserDataRepository.add({id: newUserEntity.id, nickname: data.nickname, email: data.email, password: hash}); // store hash
+                this.updateUserConnection(socket, newUserEntity);
                 const info = this.createSuccessfulInfo(socket, data);
                 socket.emit(Api.REGISTER_REQUEST_ID, info); // to sender
             }
@@ -69,7 +70,7 @@ export class LoginController {
     public static guestLogin = (socket: Socket) => {
         // try to find session if does not exist create new guest
         const id: string = SocketUtility.getSessionId(socket);
-        const connection = UserSessionRepository.getFromArchiveBySessionId(id);
+        const connection = UserSessionRepository.getBySessionId(id);
         const user: UserEntity = connection ? connection.user : LoginController.generateGuestData();
         const users: UserEntity[] = UserSessionRepository.getAllUsersExcept(user.id);
         const info: LoggedData = {id: user.id, name: user.name, users, status: 'success'};

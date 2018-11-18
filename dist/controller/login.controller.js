@@ -32,15 +32,16 @@ var LoginController = /** @class */ (function () {
                 _this.sendServerError(socket, err);
             }
             else {
-                var user = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
-                if (!user) {
-                    console.log('Users connection not found!');
-                    return;
+                var currentUserData = user_session_repository_1.UserSessionRepository.getBySessionId(socket_utility_1.SocketUtility.getSessionId(socket));
+                var newUserEntity = { id: uniqid(), name: data.nickname };
+                if (currentUserData) {
+                    socket.broadcast.emit(api_1.Api.OTHER_USER_STATE_CHANGED, { from: currentUserData.user, to: newUserEntity });
                 }
-                var userEntity = { name: data.nickname, id: user.user.id };
-                socket.broadcast.emit(api_1.Api.OTHER_USER_STATE_CHANGED, { from: user.user, to: userEntity });
-                user_data_repository_1.UserDataRepository.add({ id: userEntity.id, nickname: data.nickname, email: data.email, password: hash }); // store hash
-                _this.updateUserConnection(socket, userEntity);
+                else {
+                    socket.broadcast.emit(api_1.Api.OTHER_USER_LOGGED_IN_ID, newUserEntity);
+                }
+                user_data_repository_1.UserDataRepository.add({ id: newUserEntity.id, nickname: data.nickname, email: data.email, password: hash }); // store hash
+                _this.updateUserConnection(socket, newUserEntity);
                 var info = _this.createSuccessfulInfo(socket, data);
                 socket.emit(api_1.Api.REGISTER_REQUEST_ID, info); // to sender
             }
@@ -107,7 +108,7 @@ var LoginController = /** @class */ (function () {
     LoginController.guestLogin = function (socket) {
         // try to find session if does not exist create new guest
         var id = socket_utility_1.SocketUtility.getSessionId(socket);
-        var connection = user_session_repository_1.UserSessionRepository.getFromArchiveBySessionId(id);
+        var connection = user_session_repository_1.UserSessionRepository.getBySessionId(id);
         var user = connection ? connection.user : LoginController.generateGuestData();
         var users = user_session_repository_1.UserSessionRepository.getAllUsersExcept(user.id);
         var info = { id: user.id, name: user.name, users: users, status: 'success' };

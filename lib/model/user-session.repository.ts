@@ -13,10 +13,15 @@ export class UserSessionRepository {
     }
 
     public static getBySessionId(key: string): UserConnection {
-        return this.activeSessions.get(key);
+        const session = this.activeSessions.get(key);
+        if (session) {
+            return session;
+        } else {
+            return this.getFromArchiveBySessionId(key);
+        }
     }
 
-    public static getFromArchiveBySessionId(key: string): UserConnection {
+    private static getFromArchiveBySessionId(key: string): UserConnection {
         return this.archivedSessions.get(key);
     }
 

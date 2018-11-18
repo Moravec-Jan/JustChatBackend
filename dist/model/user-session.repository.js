@@ -9,7 +9,13 @@ var UserSessionRepository = /** @class */ (function () {
         this.userIdToSessionIdMap.set(user.user.id, key);
     };
     UserSessionRepository.getBySessionId = function (key) {
-        return this.activeSessions.get(key);
+        var session = this.activeSessions.get(key);
+        if (session) {
+            return session;
+        }
+        else {
+            return this.getFromArchiveBySessionId(key);
+        }
     };
     UserSessionRepository.getFromArchiveBySessionId = function (key) {
         return this.archivedSessions.get(key);
