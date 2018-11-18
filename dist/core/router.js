@@ -17,9 +17,10 @@ var Router = /** @class */ (function () {
             next();
         });
         io.on('connection', function (socket) {
-            console.log('New user connected with ID: ' + socket_utility_1.SocketUtility.getSessionId(socket));
+            console.log('New user connected');
+            login_controller_1.LoginController.connectUser(socket);
             socket.on('disconnect', function () { return login_controller_1.LoginController.onDisconnect(socket); });
-            socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.guestLogin(socket); });
+            socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.connectUser(socket); });
             socket.on(api_1.Api.NEW_MESSAGE_ID, function (message) { return message_controller_1.MessageController.onNewMessage(socket, message); });
             socket.on(api_1.Api.REGISTER_REQUEST_ID, function (data) { return login_controller_1.LoginController.register(socket, data); });
             socket.on(api_1.Api.USER_LOGIN_REQUEST_ID, function (data) { return login_controller_1.LoginController.userLogin(socket, data); });

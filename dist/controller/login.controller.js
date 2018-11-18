@@ -105,7 +105,7 @@ var LoginController = /** @class */ (function () {
         return error;
     };
     LoginController.saltRounds = 12;
-    LoginController.guestLogin = function (socket) {
+    LoginController.connectUser = function (socket) {
         // try to find session if does not exist create new guest
         var id = socket_utility_1.SocketUtility.getSessionId(socket);
         var connection = user_session_repository_1.UserSessionRepository.getBySessionId(id);

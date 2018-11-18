@@ -18,13 +18,13 @@ export class MessageController {
         const target: UserConnection = UserSessionRepository.getByUserId(remoteMessage.target.id);
         if (target) {
             console.log('UserConnection with ID: ' + remoteMessage.target.id + ' has send message to user' + remoteMessage.author.id + ': ' + remoteMessage.body);
-            target.socket.emit(Api.NEW_MESSAGE_ID, remoteMessage, (data) => { // verify that message has got to destination, has to been called from target
-                const info: MessageInfo = {target: remoteMessage.target.id, id: remoteMessage.id, state: 'success'};
+            target.socket.emit(Api.NEW_MESSAGE_ID, remoteMessage, (data) => { // verify that message has got to destination, has to been called from userId
+                const info: MessageInfo = {userId: remoteMessage.target.id, messageId: remoteMessage.id, state: 'success'};
                 sender.emit(Api.MESSAGE_INFO_ID, info);
             });
         } else {
             // something went wrong
-            const info: MessageInfo = {target: remoteMessage.target.id, id: remoteMessage.id, state: 'failure'};
+            const info: MessageInfo = {userId: remoteMessage.target.id, messageId: remoteMessage.id, state: 'failure'};
             sender.emit(Api.MESSAGE_INFO_ID, info);
         }
     }

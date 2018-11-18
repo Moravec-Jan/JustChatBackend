@@ -1,5 +1,5 @@
 export interface MessageInfo {
-    target: string;
-    id: number;
+    userId: string;
+    messageId: number;
     state: string;
 }

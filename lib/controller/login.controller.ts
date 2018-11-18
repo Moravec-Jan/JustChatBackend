@@ -67,7 +67,7 @@ export class LoginController {
         console.log(err);
     }
 
-    public static guestLogin = (socket: Socket) => {
+    public static connectUser = (socket: Socket) => {
         // try to find session if does not exist create new guest
         const id: string = SocketUtility.getSessionId(socket);
         const connection = UserSessionRepository.getBySessionId(id);

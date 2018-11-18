@@ -12,7 +12,7 @@ var SocketController = /** @class */ (function () {
             //Router.clients.set(SocketUtility.getSessionId(socket), socket);
             console.log('New user connected with ID: ' + SocketUtility.getSessionId(socket));
             socket.on('disconnect', function () { return login_controller_1.LoginController.onDisconnect(socket); });
-            socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.guestLogin(socket); });
+            socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.connectUser(socket); });
             socket.on(api_1.Api.NEW_MESSAGE_ID, function (message) { return _this.onNewMessage(message); });
         });
     };
