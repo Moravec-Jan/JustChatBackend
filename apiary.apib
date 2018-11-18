@@ -1,0 +1,175 @@
+FORMAT: 1A
+HOST: http://justchat.net/
+
+# JustChat
+
+This document describes api definition of JustChat web application.
+Only index page is http endpoint. Rest are socket.io messages.  
+
+## Index [/]
+### Index page [GET]
+This is one and only HTTP endpoint used in application. 
++ Response 200 (text/html)
+
+        <html>
+        Chat frontend created with angular
+        </html>
+
+# Group Messages
+
+## Message [/new_message]
+### Adding message [POST]
+User adds new message.
+This message will be delivered to target user.
+When message gets to server, server adds information about author of message.
+
++ Request (application/json)
+
+        <-- This is what sender send -->
+        {
+            "id": "4",
+            "target":{
+                  "id": "1864adfs68d4"
+                  "name": "Marco"
+            },
+            "body": "Hello friends."
+        }
+
++ Response 200 (application/json)
+
+        <-- This is what target user recieves -->
+        {
+            "id": "4",
+            "target":{
+                  "id": "1864adfs68d4"
+                  "name": "Marco"
+            },
+             "author":{
+                  "id": "auwid846adw7"
+                  "name": "Ginny"
+            },
+            "body": "Hello friends."
+        }
+
+## Message [/message_info]
+### Message info [POST]
+Informs sender about state of sent message.
+
++ Response 200 (appliaction/json)
+
+        <-- If message has been successfuly delivered-->
+        {
+            "userId": "1864adfs68d4",
+            "messageId": "9",
+            "state": "success"
+        }
+
++ Response 400 (appliaction/json)
+
+         <-- If message has not been delivered-->
+        {
+            "userId": "1864adfs68d4",
+            "messageId": "4",
+            "state": "failure"
+        }
+        
+# Group Authentication
+
+## User Login [/login]
+### Login [POST]
+            
++ Request (application/json)
+     
+        {
+            "email": "abc@example.com",
+            "password": "123456789"
+        }
+    
++ Response 200 (appliaction/json)
+    
+        {
+            "name": "Nick",
+            "users": [{"id":"1","name": "Tom"}, {"id":"2","name": "Ginny"} , {"id":"3","name": "Marco"}], 
+            "status": "success"
+        }
+
++ Response 400 (appliaction/json)
+
+        {
+            "status": error",
+            "error": "Wrong email and password combination."
+        }
+
+## User Registration [/register]
+### Register [POST]
+            
++ Request (application/json)
+     
+        {
+            "email": "abc@example.com",
+            "nickname": "Nick",
+            "password": "123456789"
+        }
+    
++ Response 400 (appliaction/json)
+    
+        {
+            "name": "Nick",
+            "users": [{"id":"1","name": "Tom"}, {"id":"2","name": "Ginny"} , {"id":"3","name": "Marco"}], 
+            "status": "success"
+        }
+
++ Response 400 (application/json)
+
+        {
+            "status": "error",
+            "error": "Validation error"
+        }
+        
+## User Logout [/logout]
+Sends user who is going to be logged out.
+### Logout [POST]
+
++ Response 200 (appliaction/json)
+
+# Group Notification messages
+
+## User Logged Out [/user_logged_out]
+Send to all users when user logged out or disconnected.
+### User Logged Out [POST]
+
++ Response 200 (application/json)
+        
+        {
+            "id": "6wa4d5a4"
+        }
+
+## User Logged In [/user_logged_in] 
+Send to all users (except user, who logged in) when new user logged in.
+### User Logged In [POST]
+
++ Response 200 (application/json)     
+         
+        {
+            "id":"1",
+            "name": "Tom"
+        } 
+
+## User State changed [/user_stated_changed] 
+Send to all users (except user, who's state has changed) when users changed his state (name).
+### User State changed [POST]
+
++ Response 200 (application/json)     
+
+        {
+            "from":
+                {
+                    "id":"ibawd645ad6w4",
+                    "name": "Tom"
+                },
+            "to":
+                {
+                    "id":"ibawd645ad6w4",
+                    "name": "Amazing Tom"
+                }
+        }
