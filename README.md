@@ -1,3 +1,3 @@
 # JustChatBackend
 
-Api definition: justchat.docs.apiary.io
+Api definition: <justchat.docs.apiary.io>
