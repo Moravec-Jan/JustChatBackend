@@ -1,7 +1,7 @@
 # JustChatBackend
 
 ## Api definition
-[https://justchat.docs.apiary.io](justchat.docs.apiary.io)
+[https://justchat.docs.apiary.io](https://justchat.docs.apiary.io)
 
 
 ## Deployment
