@@ -12,7 +12,7 @@ Backend part of basic node.js chat application.
 [https://the-just-chat.herokuapp.com](https://the-just-chat.herokuapp.com) 
 
 ## Used technologies
-Node.js
-Express
-Typescript
+* Node.js
+* Express
+* Typescript
 
