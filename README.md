@@ -15,4 +15,4 @@ Backend part of basic node.js chat application.
 * Node.js
 * Express
 * Typescript
-
+* Socket.io
