@@ -18,7 +18,7 @@ var Router = /** @class */ (function () {
         });
         io.on('connection', function (socket) {
             console.log('New user connected');
-            login_controller_1.LoginController.connectUser(socket);
+            login_controller_1.LoginController.connectUser(socket); // on connect log user based on session
             socket.on('disconnect', function () { return login_controller_1.LoginController.onDisconnect(socket); });
             socket.on(api_1.Api.GUEST_LOGIN_REQUEST_ID, function () { return login_controller_1.LoginController.connectUser(socket); });
             socket.on(api_1.Api.NEW_MESSAGE_ID, function (message) { return message_controller_1.MessageController.onNewMessage(socket, message); });

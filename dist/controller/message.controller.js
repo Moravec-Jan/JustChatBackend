@@ -17,13 +17,13 @@ var MessageController = /** @class */ (function () {
         if (target) {
             console.log('UserConnection with ID: ' + remoteMessage.target.id + ' has send message to user' + remoteMessage.author.id + ': ' + remoteMessage.body);
             target.socket.emit(api_1.Api.NEW_MESSAGE_ID, remoteMessage, function (data) {
-                var info = { target: remoteMessage.target.id, id: remoteMessage.id, state: 'success' };
+                var info = { userId: remoteMessage.target.id, messageId: remoteMessage.id, state: 'success' };
                 sender.emit(api_1.Api.MESSAGE_INFO_ID, info);
             });
         }
         else {
             // something went wrong
-            var info = { target: remoteMessage.target.id, id: remoteMessage.id, state: 'failure' };
+            var info = { userId: remoteMessage.target.id, messageId: remoteMessage.id, state: 'failure' };
             sender.emit(api_1.Api.MESSAGE_INFO_ID, info);
         }
     };
