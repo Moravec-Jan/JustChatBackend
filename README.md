@@ -10,3 +10,9 @@ Backend part of basic node.js chat application.
 
 ## Deployed application 
 [https://the-just-chat.herokuapp.com](https://the-just-chat.herokuapp.com) 
+
+## Used technologies
+* Node.js
+* Express
+* Typescript
+* Socket.io
