@@ -36,7 +36,7 @@ export class LoginController {
 
         //lets store user data and send messages
         bcrypt.hash(data.password, this.saltRounds, (err, hash: string) => {
-        if (err) {
+            if (err) {
                 this.sendServerError(socket, err);
             } else {
                 const currentUserData: UserConnection = UserSessionRepository.getBySessionId(SocketUtility.getSessionId(socket));

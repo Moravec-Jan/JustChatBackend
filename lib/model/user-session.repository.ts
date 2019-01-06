@@ -70,5 +70,7 @@ export class UserSessionRepository {
         }
     }
 
-    //TODO: delete not active sessions, for now they are never removed!
+    //TODO: delete session data after some period
+    // do not use in memory session in production
+    // use database instead
 }
